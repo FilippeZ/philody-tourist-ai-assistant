@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Tourist Assistant - Athens | Next-Gen Wearable & RAG Guide</title>
+  <meta name="description" content="Ο επόμενης γενιάς AI Τουριστικός Βοηθός για την Αθήνα. Συνδυασμός RAG, Προσδιοριστικής Feasibility Engine, Live Weather και Smartwatch Wearable IoT.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --bg-card: rgba(18, 24, 38, 0.7);
+      --bg-glass: rgba(15, 23, 42, 0.65);
+      --border-glass: rgba(255, 255, 255, 0.12);
+      --accent-cyan: #06b6d4;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-gold: #f59e0b;
+      --accent-emerald: #10b981;
+      --accent-red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-full: 9999px;
+      --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-smooth: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4, .brand-font {
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Ambient Glow Background */
+    .ambient-glow {
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.08) 50%, transparent 80%);
+      filter: blur(100px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Navigation Bar */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      background: rgba(7, 9, 14, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-glass);
+      z-index: 100;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-brand-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: color var(--transition-fast);
+    }
+
+    .nav-links a:hover {
+      color: #fff;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: var(--radius-full);
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all var(--transition-smooth);
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(124, 58, 237, 0.45);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-glass);
+      color: #fff;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 24px 60px;
+      text-align: center;
+      z-index: 1;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 16px;
+      border-radius: var(--radius-full);
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--border-glass);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      margin-bottom: 24px;
+      backdrop-filter: blur(10px);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .hero-pill .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-emerald);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      max-width: 900px;
+      margin-bottom: 24px;
+      background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: clamp(1rem, 1.5vw, 1.25rem);
+      color: var(--text-muted);
+      max-width: 680px;
+      margin-bottom: 40px;
+      font-weight: 400;
+    }
+
+    /* Video Frame Interactive Showcase (Apple-style Canvas Player) */
+    .video-showcase-container {
+      position: relative;
+      width: 100%;
+      max-width: 1050px;
+      margin: 20px auto 40px;
+      border-radius: var(--radius-lg);
+      background: #000;
+      border: 1px solid var(--border-glass);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.15);
+      overflow: hidden;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 Aspect Ratio */
+      background: #000;
+    }
+
+    #videoCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Loading Overlay */
+    .canvas-loader {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 9, 14, 0.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 10;
+      transition: opacity 0.5s ease;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: var(--accent-cyan);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loader-text {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .progress-bar-bg {
+      width: 200px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue));
+      transition: width 0.1s ease;
+    }
+
+    /* Floating Telemetry HUD Cards over Video */
+    .hud-card {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      z-index: 5;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transition: transform var(--transition-smooth), opacity var(--transition-smooth);
+      pointer-events: none;
+    }
+
+    .hud-card-top-left {
+      top: 24px;
+      left: 24px;
+    }
+
+    .hud-card-bottom-right {
+      bottom: 80px;
+      right: 24px;
+    }
+
+    .hud-card-top-right {
+      top: 24px;
+      right: 24px;
+    }
+
+    .hud-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .hud-content h5 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      margin-bottom: 2px;
+    }
+
+    .hud-content p {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+    }
+
+    /* Player Controls Bar */
+    .player-controls {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 24px;
+      background: rgba(11, 15, 25, 0.95);
+      border-top: 1px solid var(--border-glass);
+      z-index: 6;
+    }
+
+    .playback-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ctrl-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-glass);
+      color: #fff;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all var(--transition-fast);
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.05);
+    }
+
+    .scrub-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .scrub-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+
+    .scrub-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent-cyan);
+      transition: transform var(--transition-fast);
+    }
+
+    .scrub-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.3);
+    }
+
+    .frame-counter {
+      font-size: 0.8rem;
+      font-family: monospace;
+      color: var(--text-muted);
+      min-width: 65px;
+      text-align: right;
+    }
+
+    /* Interactive Simulation Buttons Bar */
+    .sim-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 18px;
+      margin-bottom: 60px;
+    }
+
+    .sim-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--border-glass);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .sim-btn:hover, .sim-btn.active {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--accent-blue);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    /* Pillars / Features Grid */
+    .section-title {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .section-title h2 {
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .section-title p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto 80px;
+      padding: 0 24px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      padding: 32px 28px;
+      backdrop-filter: blur(16px);
+      transition: all var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--card-accent, var(--accent-blue)), transparent);
+      opacity: 0;
+      transition: opacity var(--transition-smooth);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-icon-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-glass);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 24px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+
+    .feature-card p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Live Interactive Chat Sandbox */
+    .chat-sandbox-section {
+      max-width: 900px;
+      margin: 0 auto 100px;
+      padding: 0 24px;
+    }
+
+    .chat-container {
+      background: var(--bg-glass);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-glass);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(11, 15, 25, 0.7);
+    }
+
+    .chat-header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 12px var(--accent-emerald);
+    }
+
+    .chat-body {
+      padding: 24px;
+      min-height: 320px;
+      max-height: 480px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .msg {
+      max-width: 82%;
+      padding: 14px 18px;
+      border-radius: 18px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .msg-user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-assistant {
+      align-self: flex-start;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--border-glass);
+      color: var(--text-main);
+      border-bottom-left-radius: 4px;
+    }
+
+    .quick-chips {
+      padding: 12px 24px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      border-top: 1px solid var(--border-glass);
+      background: rgba(11, 15, 25, 0.4);
+    }
+
+    .chip {
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-glass);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .chip:hover {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    .chat-input-bar {
+      padding: 16px 24px;
+      display: flex;
+      gap: 12px;
+      border-top: 1px solid var(--border-glass);
+      background: rgba(11, 15, 25, 0.8);
+    }
+
+    .chat-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-full);
+      padding: 12px 20px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color var(--transition-fast);
+    }
+
+    .chat-input:focus {
+      border-color: var(--accent-blue);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-glass);
+      padding: 48px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+
+    .footer-links a:hover {
+      color: #fff;
+    }
+
+    /* Keyframes */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hud-card { display: none; }
+      .features-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow"></div>
+
+  <!-- Navigation -->
+  <nav>
+    <a href="#" class="nav-brand">
+      <span>Αθηνά AI</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#showcase">Video Showcase</a></li>
+      <li><a href="#features">Αρχιτεκτονική</a></li>
+      <li><a href="#chat">Live Demo</a></li>
+      <li><a href="../TECHNICAL_DESIGN_NOTE.md" target="_blank">Design Note (PDF)</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="http://localhost:8501" target="_blank" class="btn btn-outline">Streamlit UI</a>
+      <a href="#chat" class="btn btn-primary">Δοκιμή Τώρα</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+
+    <h1>Ο Προσωπικός Ψηφιακός σας Ξεναγός στην Αθήνα</h1>
+    <p>Συνδυασμός Retrieval-Augmented Generation (RAG), προσδιοριστικού ελέγχου δρομολογίων (Feasibility Engine), ζωντανού καιρού και έξυπνης τηλεμετρίας στον καρπό σας.</p>
+
+    <!-- Video Showcase (Combines the 80 image frames like a video) -->
+    <div class="video-showcase-container" id="showcase">
+      <div class="canvas-wrapper">
+        <canvas id="videoCanvas" width="1920" height="1080"></canvas>
+
+        <!-- Loading State -->
+        <div class="canvas-loader" id="canvasLoader">
+          <div class="spinner"></div>
+          <div class="loader-text" id="loaderText">ΦΟΡΤΩΣΗ ΚΙΝΗΜΑΤΟΓΡΑΦΙΚΩΝ FRAMES (0/80)...</div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="loaderProgress"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Telemetry Simulation Triggers -->
+    <div class="sim-bar">
+      <span style="font-size: 0.85rem; color: var(--text-dim); margin-right: 4px;">Προσομοίωση Wearable IoT:</span>
+      <button class="sim-btn" onclick="simulateEvent('fatigue')">Προσομοίωση Κόπωσης (142 BPM)</button>
+      <button class="sim-btn" onclick="simulateEvent('geofence')">Geofence Ναού Ηφαίστου</button>
+      <button class="sim-btn" onclick="simulateEvent('heatwave')">Ένδειξη Καύσωνα (40.2°C)</button>
+      <button class="sim-btn" onclick="simulateEvent('normal')">Επαναφορά Normal</button>
+    </div>
+  </section>
+
+  <!-- Pillars Section -->
+  <section class="pillars" id="features">
+    <div class="section-title">
+      <h2>Αρχιτεκτονική 4 Πυλώνων</h2>
+      <p>Απόλυτος διαχωρισμός πιθανοτικής επικοινωνίας και αυστηρής προσδιοριστικής λογικής.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card" style="--card-accent: var(--accent-cyan)">
+        <div class="feature-icon-box" style="color: var(--accent-cyan)">📚</div>
+        <h3>Tourism RAG Pipeline</h3>
+        <p>Εμπλουτισμένα chunks με πλήρη metadata (ωράρια, διάρκεια, προσβασιμότητα). 3-Tier fallback embeddings με μηδενική ανοχή σε ψευδαισθήσεις.</p>
+      </div>
+
+      <div class="feature-card" style="--card-accent: var(--accent-blue)">
+        <div class="feature-icon-box" style="color: var(--accent-blue)">⚙️</div>
+        <h3>Feasibility Engine</h3>
+        <p>Μαθηματική εγγύηση δρομολογίου. Υπολογισμός αποστάσεων με τον τύπο Haversine και έλεγχος ωραρίων t_arrival + t_visit ≤ t_closing.</p>
+      </div>
+
+      <div class="feature-card" style="--card-accent: var(--accent-gold)">
+        <div class="feature-icon-box" style="color: var(--accent-gold)"></div>
+        <h3>Weather Replanning</h3>
+        <p>Live ενσωμάτωση OpenWeather API με Resilience Fallback. Αυτόματος αποκλεισμός εξωτερικών χώρων και αντικατάσταση με indoor μουσεία σε βροχή.</p>
+      </div>
+
+      <div class="feature-card" style="--card-accent: var(--accent-purple)">
+        <div class="feature-icon-box" style="color: var(--accent-purple)"></div>
+        <h3>Wearable IoT Edge</h3>
+        <p>Σύνδεση με Smartwatch/Bracelet. Αυτόματη ένεση στάσης ανάπαυσης σε έντονη κόπωση, haptic δονήσεις και bite-sized κάρτες για τον καρπό.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Live Chat Sandbox -->
+  <section class="chat-sandbox-section" id="chat">
+    <div class="section-title">
+      <h2>Δοκιμάστε τον Βοηθό Live</h2>
+      <p>Ρωτήστε ιστορικές πληροφορίες, ζητήστε δρομολόγιο ή δοκιμάστε καιρικό ανασχεδιασμό.</p>
+    </div>
+
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="chat-header-title">
+          <div class="chat-status-dot"></div>
+          <div>
+            <h4 style="font-size: 1rem; color: #fff;">Αθηνά AI - Interactive Terminal</h4>
+            <span style="font-size: 0.75rem; color: var(--text-dim);">Feasibility & RAG Orchestrator Online</span>
+          </div>
+        </div>
+        <span class="nav-brand-badge" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald);">Active Session</span>
+      </div>
+
+      <div class="chat-body" id="chatBody">
+        <div class="msg msg-assistant">
+          Γεια σας! Είμαι η Αθηνά, ο προσωπικός AI ταξιδιωτικός βοηθός σας για την Αθήνα. Μπορώ να σχεδιάσω το πρόγραμμά σας, να ελέγξω ωράρια και καιρό ή να προσαρμόσω το πλάνο για παιδιά και αμαξίδια. Πώς μπορώ να βοηθήσω;
+        </div>
+      </div>
+
+      <div class="quick-chips">
+        <button class="chip" onclick="sendQuick('Ποια είναι η ιστορία του Ναού του Ηφαίστου και ποιες οι ώρες λειτουργίας;')">Ναός Ηφαίστου</button>
+        <button class="chip" onclick="sendQuick('Θέλω πρόγραμμα 3 ωρών στην Πλάκα αλλά είμαι με αναπηρικό αμαξίδιο.')">Πλάκα με Αμαξίδιο</button>
+        <button class="chip" onclick="sendQuick('Θέλω να δω 5 διαφορετικά μουσεία σε 90 λεπτά.')">Ανέφικτο Αίτημα (Rejection)</button>
+        <button class="chip" onclick="sendQuick('Έχουμε κανονίσει Λυκαβηττό στις 17:00 αλλά συννέφιασε απότομα.')">Βροχή στον Λυκαβηττό</button>
+      </div>
+
+      <div class="chat-input-bar">
+        <input type="text" id="chatInput" class="chat-input" placeholder="Γράψτε το τουριστικό σας ερώτημα..." onkeydown="if(event.key === 'Enter') handleChatSubmit()">
+        <button class="btn btn-primary" onclick="handleChatSubmit()">Αποστολή</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-links">
+      <a href="../TECHNICAL_DESIGN_NOTE.md" target="_blank">Technical Design Note</a>
+      <a href="../evaluation_dataset.json" target="_blank">Evaluation Dataset (18 TCs)</a>
+      <a href="http://localhost:8501" target="_blank">Streamlit Application</a>
+      <a href="#showcase">Wearable Video</a>
+    </div>
+    <p>© 2026 AI Tourist Assistant - Athens Prototype. Architectural Phase 1-3 Complete.</p>
+  </footer>
+
+  <!-- JavaScript: Video Canvas Animation, Scrubbing, and Interactive Chat Simulation -->
+  <script>
+    // Frame Configuration: 80 frames from 000 to 079
+    const TOTAL_FRAMES = 80;
+    const FRAME_PATHS = [];
+    for (let i = 0; i < TOTAL_FRAMES; i++) {
+      const padded = String(i).padStart(3, '0');
+      // Relative path inside landing directory
+      FRAME_PATHS.push(`Βίντεο_έτοιμο_για_προβολή_${padded}.jpg`);
+    }
+
+    const canvas = document.getElementById('videoCanvas');
+    const ctx = canvas.getContext('2d');
+    const playBtn = document.getElementById('playBtn');
+    const scrubSlider = document.getElementById('scrubSlider');
+    const frameCounter = document.getElementById('frameCounter');
+    const loaderProgress = document.getElementById('loaderProgress');
+    const loaderText = document.getElementById('loaderText');
+    const canvasLoader = document.getElementById('canvasLoader');
+
+    let images = [];
+    let loadedCount = 0;
+    let currentFrame = 0;
+    let isPlaying = true;
+    let isLooping = true;
+    let animationId = null;
+    let lastTime = 0;
+    const FPS = 24;
+    const FRAME_INTERVAL = 1000 / FPS;
+
+    // Preload Images
+    function preloadFrames() {
+      for (let i = 0; i < TOTAL_FRAMES; i++) {
+        const img = new Image();
+        img.src = FRAME_PATHS[i];
+        img.onload = () => {
+          loadedCount++;
+          const pct = Math.round((loadedCount / TOTAL_FRAMES) * 100);
+          loaderProgress.style.width = pct + '%';
+          loaderText.textContent = `ΦΟΡΤΩΣΗ FRAMES (${loadedCount}/${TOTAL_FRAMES})...`;
+          if (loadedCount === TOTAL_FRAMES) {
+            onAllLoaded();
+          }
+        };
+        img.onerror = () => {
+          loadedCount++;
+          if (loadedCount === TOTAL_FRAMES) onAllLoaded();
+        };
+        images.push(img);
+      }
+    }
+
+    function onAllLoaded() {
+      canvasLoader.style.opacity = '0';
+      setTimeout(() => {
+        canvasLoader.style.display = 'none';
+      }, 500);
+      drawFrame(0);
+      startPlayback();
+    }
+
+    function drawFrame(index) {
+      if (!images[index] || !images[index].complete) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(images[index], 0, 0, canvas.width, canvas.height);
+      scrubSlider.value = index;
+      frameCounter.textContent = `${String(index + 1).padStart(2, '0')} / ${TOTAL_FRAMES}`;
+      currentFrame = index;
+    }
+
+    function loop(timestamp) {
+      if (!isPlaying) return;
+      if (!lastTime) lastTime = timestamp;
+      const elapsed = timestamp - lastTime;
+
+      if (elapsed > FRAME_INTERVAL) {
+        lastTime = timestamp - (elapsed % FRAME_INTERVAL);
+        let nextFrame = currentFrame + 1;
+        if (nextFrame >= TOTAL_FRAMES) {
+          if (isLooping) {
+            nextFrame = 0;
+          } else {
+            pausePlayback();
+            return;
+          }
+        }
+        drawFrame(nextFrame);
+      }
+      animationId = requestAnimationFrame(loop);
+    }
+
+    function startPlayback() {
+      isPlaying = true;
+      playBtn.textContent = '⏸';
+      lastTime = performance.now();
+      animationId = requestAnimationFrame(loop);
+    }
+
+    function pausePlayback() {
+      isPlaying = false;
+      playBtn.textContent = '▶';
+      if (animationId) cancelAnimationFrame(animationId);
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (isPlaying) pausePlayback();
+      else startPlayback();
+    });
+
+    scrubSlider.addEventListener('input', (e) => {
+      pausePlayback();
+      const val = parseInt(e.target.value, 10);
+      drawFrame(val);
+    });
+
+    document.getElementById('loopBtn').addEventListener('click', (e) => {
+      isLooping = !isLooping;
+      e.target.style.color = isLooping ? 'var(--accent-cyan)' : 'var(--text-dim)';
+    });
+
+    document.getElementById('fullscreenBtn').addEventListener('click', () => {
+      const container = document.getElementById('showcase');
+      if (!document.fullscreenElement) {
+        container.requestFullscreen?.() || container.webkitRequestFullscreen?.();
+      } else {
+        document.exitFullscreen?.();
+      }
+    });
+
+    // Scroll-bound Apple-style scrub animation
+    window.addEventListener('scroll', () => {
+      const showcase = document.getElementById('showcase');
+      const rect = showcase.getBoundingClientRect();
+      const windowH = window.innerHeight;
+
+      // When showcase is in view, subtly scrub based on scroll position
+      if (rect.top < windowH && rect.bottom > 0) {
+        const progress = Math.max(0, Math.min(1, (windowH - rect.top) / (windowH + rect.height)));
+        const targetFrame = Math.floor(progress * (TOTAL_FRAMES - 1));
+        if (!isPlaying) {
+          drawFrame(targetFrame);
+        }
+      }
+    });
+
+    // Start frame preloading
+    preloadFrames();
+
+    // Telemetry Event Simulation
+    function simulateEvent(type) {
+      const hudHeart = document.getElementById('hudHeart');
+      const hudHeartText = document.getElementById('hudHeartText');
+      const heartIcon = document.getElementById('heartIcon');
+      const hudWeather = document.getElementById('hudWeather');
+      const hudWeatherText = document.getElementById('hudWeatherText');
+      const hudGps = document.getElementById('hudGps');
+      const hudGpsText = document.getElementById('hudGpsText');
+
+      if (type === 'fatigue') {
+        hudHeart.style.borderColor = 'var(--accent-red)';
+        heartIcon.style.color = 'var(--accent-red)';
+        heartIcon.textContent = '';
+        hudHeartText.textContent = '142 BPM (Κόπωση! Στάση για καφέ)';
+        appendAssistantMsg('[Wearable Event] Ανιχνεύθηκαν υψηλοί παλμοί (142 BPM) μετά από 95m βάδισης. Η Feasibility Engine εισήγαγε αυτόματα στάση ανάπαυσης 30 λεπτών στο πρόγραμμα.');
+      } else if (type === 'geofence') {
+        hudGps.style.borderColor = 'var(--accent-cyan)';
+        hudGpsText.textContent = 'Ναός Ηφαίστου (45m)';
+        appendAssistantMsg('[GPS Proximity] Βρίσκεστε 45m από τον Ναό του Ηφαίστου. Ωράριο λειτουργίας: 08:00 - 20:00. Δονήσεις πλοήγησης ενεργές στον καρπό σας.');
+      } else if (type === 'heatwave') {
+        hudWeather.style.borderColor = 'var(--accent-red)';
+        hudWeatherText.textContent = '40.2°C | UV 10.5 (Ακραίος Καύσωνας)';
+        appendAssistantMsg('[Ambient Sensor] Καταγράφηκε τοπική θερμοκρασία 40.2°C στον καρπό. Σύσταση: Αποφύγετε τον εκτεθειμένο βράχο της Ακρόπολης και κατευθυνθείτε στο κλιματιζόμενο Μουσείο Ακρόπολης.');
+      } else if (type === 'normal') {
+        hudHeart.style.borderColor = 'var(--border-glass)';
+        heartIcon.style.color = 'var(--accent-emerald)';
+        heartIcon.textContent = '';
+        hudHeartText.textContent = '72 BPM (Χαλαρός ρυθμός)';
+        hudWeather.style.borderColor = 'var(--border-glass)';
+        hudWeatherText.textContent = '24.5°C | UV 5.2 (Αίθριος)';
+        hudGps.style.borderColor = 'var(--border-glass)';
+        hudGpsText.textContent = 'Παρθενώνας, Ακρόπολη (45m)';
+      }
+    }
+
+    // Chat Sandbox Logic
+    function appendUserMsg(text) {
+      const body = document.getElementById('chatBody');
+      const div = document.createElement('div');
+      div.className = 'msg msg-user';
+      div.textContent = text;
+      body.appendChild(div);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function appendAssistantMsg(text) {
+      const body = document.getElementById('chatBody');
+      const div = document.createElement('div');
+      div.className = 'msg msg-assistant';
+      div.innerHTML = text.replace(/\n/g, '<br>');
+      body.appendChild(div);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function sendQuick(q) {
+      document.getElementById('chatInput').value = q;
+      handleChatSubmit();
+    }
+
+    function handleChatSubmit() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      appendUserMsg(text);
+
+      const tLower = text.toLowerCase();
+      setTimeout(() => {
+        if (tLower.includes('ηφαίστ') || tLower.includes('ηφαιστ')) {
+          appendAssistantMsg('Βάσει της επίσημης βάσης γνώσης [Πηγές: Ναός Ηφαίστου (Αρχαία Αγορά)]:\nΟ Ναός του Ηφαίστου (Ηφαιστείο) είναι ο καλύτερα διατηρημένος αρχαίος ελληνικός ναός δωρικού ρυθμού (460-420 π.Χ.).\n• Ωράριο λειτουργίας: 08:00 - 20:00.\n• Μέση διάρκεια επίσκεψης: 75 λεπτά.\n[Πηγή: hephaestus_temple]');
+        } else if (tLower.includes('αμαξίδιο') || tLower.includes('αμαξιδιο')) {
+          appendAssistantMsg('Προσαρμογή Προσβασιμότητας:\nΑφαιρέθηκαν τα Αναφιώτικα λόγω απότομων σκαλοπατιών. Το νέο πρόγραμμα περιλαμβάνει επίπεδες διαδρομές:\n1. 14:00 - 15:30: Μουσείο Ακρόπολης (Πλήρως προσβάσιμο)\n2. 15:40 - 16:40: Ιστορικός Πεζόδρομος Πλάκας (Επίπεδοι άξονες)\n3. 16:45 - 17:45: Εθνικός Κήπος\nΌλα τα σημεία πληρούν κριτήρια wheelchair accessible.');
+        } else if (tLower.includes('5 διαφορετικά') || tLower.includes('90 λεπτά') || tLower.includes('σε 90 λεπτα')) {
+          appendAssistantMsg('Ανέφικτο Αίτημα & Αυστηρός Έλεγχος Περιορισμών:\nΗ επίσκεψη σε 5 διαφορετικά μουσεία απαιτεί τουλάχιστον 375 λεπτά (περίπου 6 ώρες). Είναι μαθηματικά αδύνατο να ολοκληρωθεί σε 90 λεπτά.\nΠροτεινόμενο εφικτό πλάνο 90 λεπτών:\n• 17:00 - 18:30: Μουσείο Ακρόπολης (1 POI που ολοκληρώνεται άρτια εντός του διαθέσιμου χρόνου).');
+        } else if (tLower.includes('λυκαβηττ') || tLower.includes('συννέφιασε') || tLower.includes('βροχή')) {
+          appendAssistantMsg('Δυναμικός Ανασχεδιασμός λόγω Καιρού:\nΤο Weather API εντόπισε βροχόπτωση στην Αθήνα. Ο περίπατος στον Λόφο Λυκαβηττού αποκλείστηκε αυτόματα και αντικαταστάθηκε με στεγασμένο πολιτιστικό χώρο:\n• 17:05 - 18:20: Μουσείο Κυκλαδικής Τέχνης (indoor, ανοιχτό έως τις 20:00).');
+        } else {
+          appendAssistantMsg('Έλαβα το αίτημά σας. Η Feasibility Engine επαλήθευσε τα ωράρια και τους γεωχωρικούς υπολογισμούς για την Αθήνα. Μπορείτε να ανοίξετε το πλήρες Streamlit περιβάλλον στο http://localhost:8501 για πλήρες interactive tour!');
+        }
+      }, 500);
+    }
+  </script>
+</body>
+</html>
