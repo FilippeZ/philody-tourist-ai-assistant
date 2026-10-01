@@ -1,0 +1,45 @@
+{
+  "feasible": true,
+  "start_time": "14:00",
+  "end_time": "17:00",
+  "actual_end_time": "16:56",
+  "total_distance_km": 1.04,
+  "weather_adjusted": false,
+  "constraint_rejected": false,
+  "total_needed_mins": null,
+  "schedule": [
+    {
+      "type": "activity",
+      "poi_id": "acropolis_museum",
+      "poi_name": "Μουσείο Ακρόπολης",
+      "poi": "Μουσείο Ακρόπολης",
+      "category": "museum",
+      "env_type": "indoor",
+      "time_slot": "14:05-15:35",
+      "time": "14:05-15:35",
+      "duration_mins": 90
+    },
+    {
+      "type": "transit",
+      "action": "Μετάβαση στο Εθνικός Κήπος (walking)",
+      "duration_mins": 21,
+      "distance_km": 1.04,
+      "time": "15:35-15:56"
+    },
+    {
+      "type": "activity",
+      "poi_id": "national_garden",
+      "poi_name": "Εθνικός Κήπος",
+      "poi": "Εθνικός Κήπος",
+      "category": "park",
+      "env_type": "outdoor",
+      "time_slot": "15:56-16:56",
+      "time": "15:56-16:56",
+      "duration_mins": 60
+    }
+  ],
+  "selected_poi_ids": [
+    "acropolis_museum",
+    "national_garden"
+  ]
+}
