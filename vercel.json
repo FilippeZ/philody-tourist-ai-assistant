@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "logo.jpg",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "landing/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "api.py"
+    },
+    {
+      "src": "/docs",
+      "dest": "api.py"
+    },
+    {
+      "src": "/openapi.json",
+      "dest": "api.py"
+    },
+    {
+      "src": "/landing/(.*)",
+      "dest": "/landing/$1"
+    },
+    {
+      "src": "/logo.jpg",
+      "dest": "/logo.jpg"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
