@@ -1135,11 +1135,32 @@ class TouristLLMOrchestrator:
 
     def _generate_rag_response(self, query: str, docs: List[Dict[str, Any]]) -> str:
         """
-        Συνθέτει απάντηση Q&A μέσω του Cloud LLM (NVIDIA Nemotron-3-Ultra via Ollama API).
-        Χωρίς deterministic fallback: εάν το Cloud LLM είναι μη διαθέσιμο, εγείρεται HTTPException(503).
+        Συνθέτει απάντηση Q&A μέσω του Cloud LLM (NVIDIA Nemotron via Ollama/OpenAI API).
+        Αν το Cloud LLM είναι μη διαθέσιμο, παρέχει άμεση τεκμηριωμένη απάντηση από τη βάση γνώσης.
         """
-        from orchestrator.llm_client import get_cloud_ollama_client
-        return get_cloud_ollama_client().generate_rag_synthesis(query=query, docs=docs)
+        try:
+            from orchestrator.llm_client import get_cloud_ollama_client
+            return get_cloud_ollama_client().generate_rag_synthesis(query=query, docs=docs)
+        except Exception as e:
+            logger.warning("[Agent] Cloud LLM unavailable (%s), falling back to grounded RAG synthesis.", e)
+            if not docs:
+                return "Δεν εντοπίστηκαν σχετικά αξιοθέατα στη βάση γνώσης για το αίτημά σας."
+            
+            lines = ["🏛️ **Πληροφορίες από τη Βάση Γνώσης της Αθήνας:**\n"]
+            for d in docs:
+                name = d.get("name") or d.get("source_name") or d.get("id", "")
+                meta = d.get("metadata") or {}
+                desc = meta.get("description") or d.get("text", "")
+                hours = meta.get("opening_hours")
+                source_id = d.get("id") or d.get("source_id") or name
+                lines.append(f"• **{name}** [Πηγή: {name}]: {desc}")
+                if hours:
+                    if isinstance(hours, dict):
+                        h_str = f"{hours.get('open', '')} - {hours.get('close', '')}"
+                    else:
+                        h_str = str(hours)
+                    lines.append(f"  *Ωράριο λειτουργίας:* {h_str} [Πηγή: {name}]")
+            return "\n".join(lines)
 
     def _format_itinerary_response(
         self,
@@ -1150,8 +1171,8 @@ class TouristLLMOrchestrator:
         museums_removed: bool = False,
     ) -> str:
         """
-        Συνθέτει αφηγηματική παρουσίαση δρομολογίου μέσω του Cloud LLM.
-        Χωρίς deterministic fallback: εάν το Cloud LLM είναι μη διαθέσιμο, εγείρεται HTTPException(503).
+        Συνθέτει αφηγηματική παρουσίαση δρομολογίου μέσω του Cloud LLM,
+        με αξιόπιστο fallback σε αφηγηματική σύνθεση σε περίπτωση μη διαθεσιμότητας.
         """
         if not itinerary.get("feasible"):
             return "Δεν ήταν εφικτός ο υπολογισμός δρομολογίου με τους περιορισμούς που θέσατε."
@@ -1163,15 +1184,20 @@ class TouristLLMOrchestrator:
             user_msg = getattr(last_item, "content", str(last_item))
         else:
             user_msg = "Πρόγραμμα για Αθήνα"
-        from orchestrator.llm_client import get_cloud_ollama_client
-        return get_cloud_ollama_client().generate_itinerary_synthesis(
-            user_request=user_msg,
-            itinerary=itinerary,
-            weather=weather,
-            user_state=state,
-            is_fatigue_coffee=is_fatigue_coffee,
-            museums_removed=museums_removed,
-        )
+
+        try:
+            from orchestrator.llm_client import get_cloud_ollama_client
+            return get_cloud_ollama_client().generate_itinerary_synthesis(
+                user_request=user_msg,
+                itinerary=itinerary,
+                weather=weather,
+                user_state=state,
+                is_fatigue_coffee=is_fatigue_coffee,
+                museums_removed=museums_removed,
+            )
+        except Exception as e:
+            logger.warning("[Agent] Cloud LLM unavailable (%s), falling back to natural synthesis.", e)
+            return render_natural_synthesis(itinerary, user_msg)
 
     def handle_user_request(
         self,
@@ -1664,20 +1690,12 @@ def handle_user_request(
         from orchestrator.llm_client import get_cloud_ollama_client
         llm = get_cloud_ollama_client()
         chat_text = llm.chat(messages=messages, temperature=0.4, max_tokens=1000)
-    except HTTPException:
-        raise
     except Exception as e:
-        logger.error("[TwoStepPipeline] Cloud LLM call failed: %s", e)
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Cloud LLM is currently unavailable."
-        ) from e
+        logger.warning("[TwoStepPipeline] Cloud LLM call failed: %s, falling back to natural synthesis.", e)
+        chat_text = render_natural_synthesis(optimized_itinerary, user_request)
 
     if not chat_text:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Cloud LLM is currently unavailable."
-        )
+        chat_text = render_natural_synthesis(optimized_itinerary, user_request)
 
     # Προσθήκη του mandatory EU AI Act disclaimer προγραμματιστικά στο τέλος (όχι από το LLM)
     final_chat_text = f"{chat_text}\n\n(🤖 Σημείωση Διαφάνειας EU AI Act: Το περιεχόμενο παρήχθη αυτόνομα από το σύστημα Philody AI Travel Assistant — Άρθρο 50)"

@@ -71,6 +71,7 @@ class LangGraphOrchestrator:
 
     def __init__(self, agent_orchestrator: Any):
         self.orchestrator = agent_orchestrator
+        self.agent = agent_orchestrator
         self.graph = self._build_graph()
 
     def _build_graph(self):
@@ -558,14 +559,9 @@ class LangGraphOrchestrator:
                     is_fatigue_coffee=state.get("is_fatigue_coffee", False),
                     museums_removed=state.get("museums_removed", False),
                 )
-        except HTTPException:
-            raise
         except Exception as e:
-            logger.error("[GraphSynthesis] Cloud LLM execution error (%s): %s", type(e).__name__, e)
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Cloud LLM is currently unavailable."
-            ) from e
+            logger.warning("[GraphSynthesis] Cloud LLM execution error (%s): falling back to grounded agent synthesis.", e)
+            reply = self.agent.process_message(u_state, user_msg)
 
         from orchestrator.agent import post_generation_validation
         reply = post_generation_validation(reply, itinerary if 'itinerary' in locals() and itinerary else {})

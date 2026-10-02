@@ -54,7 +54,7 @@ class CloudOllamaClient:
         host: Optional[str] = None,
         api_key: Optional[str] = None,
         model: Optional[str] = None,
-        timeout: float = 30.0,
+        timeout: float = 4.0,
     ) -> None:
         # 1. Read configuration from environment (.env)
         ollama_host_env = os.getenv("OLLAMA_HOST", "").strip()
