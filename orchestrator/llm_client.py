@@ -54,7 +54,7 @@ class CloudOllamaClient:
         host: Optional[str] = None,
         api_key: Optional[str] = None,
         model: Optional[str] = None,
-        timeout: float = 4.0,
+        timeout: float = 25.0,
     ) -> None:
         # 1. Read configuration from environment (.env)
         ollama_host_env = os.getenv("OLLAMA_HOST", "").strip()
@@ -86,7 +86,8 @@ class CloudOllamaClient:
             or "nemotron-3-nano:30b"
         ).strip()
 
-        self.timeout = timeout
+        timeout_env = os.getenv("LLM_TIMEOUT")
+        self.timeout = float(timeout_env) if timeout_env else timeout
 
     def _get_headers(self) -> Dict[str, str]:
         headers = {"Content-Type": "application/json"}
@@ -170,16 +171,27 @@ class CloudOllamaClient:
             # Parse content from either Ollama native (/api/chat) or OpenAI-compatible format
             content = ""
             if "message" in data and isinstance(data["message"], dict):
-                content = data["message"].get("content", "").strip()
-                if not content and "thinking" in data["message"]:
-                    content = data["message"].get("thinking", "").strip()
+                msg = data["message"]
+                content = msg.get("content", "").strip()
+                if not content and "reasoning" in msg:
+                    content = msg.get("reasoning", "").strip()
+                if not content and "thinking" in msg:
+                    content = msg.get("thinking", "").strip()
             elif "choices" in data and isinstance(data["choices"], list) and len(data["choices"]) > 0:
                 msg_dict = data["choices"][0].get("message", {})
                 content = msg_dict.get("content", "").strip()
+                if not content and "reasoning" in msg_dict:
+                    content = msg_dict.get("reasoning", "").strip()
                 if not content and "reasoning_content" in msg_dict:
                     content = msg_dict.get("reasoning_content", "").strip()
+                if not content and "thinking" in msg_dict:
+                    content = msg_dict.get("thinking", "").strip()
             else:
                 raise ValueError(f"Unexpected response structure from LLM API: {data}")
+
+            # Strip <think>...</think> tags if reasoning was included in output
+            if "<think>" in content and "</think>" in content:
+                content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
 
             if not content:
                 raise ValueError("Empty response received from Cloud LLM.")
