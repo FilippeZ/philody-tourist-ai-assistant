@@ -78,7 +78,7 @@ from monitoring.observability import observability_registry
 from rag.pipeline import atomic_poi_pipeline
 
 
-# 1. Αρχικοποίηση FastAPI App
+# 1. Αρχικοποίηση FastAPI App (redirect_slashes=False ensures Vercel edge proxy compatibility)
 app = FastAPI(
     title="🏛️ Philody AI Travel Assistant API",
     description=(
@@ -89,9 +89,28 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    redirect_slashes=False,
 )
 
-# 2. Observability & CORS Middleware
+# 2. Observability, Vercel Rewrites & CORS Middleware
+class VercelPathNormalizationMiddleware(BaseHTTPMiddleware):
+    """
+    Normalizes request paths when running under Vercel Serverless / Edge proxies:
+    1. Reads Vercel's 'x-matched-path' header if provided.
+    2. Allows endpoints requested as /v1/... to map directly to /api/v1/...
+    3. Prevents 404s when Vercel rewrites target serverless functions.
+    """
+    async def dispatch(self, request: Request, call_next):
+        matched_path = request.headers.get("x-matched-path")
+        if matched_path and request.scope.get("path") in ("/api.py", "/api/index.py", "/api", ""):
+            clean_path = matched_path.split("?")[0]
+            request.scope["path"] = clean_path
+
+        if request.scope.get("path", "").startswith("/v1/"):
+            request.scope["path"] = f"/api{request.scope['path']}"
+
+        return await call_next(request)
+
 class PrometheusObservabilityMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         start = time.perf_counter()
@@ -112,6 +131,7 @@ class PrometheusObservabilityMiddleware(BaseHTTPMiddleware):
                 duration_ms=dur_ms
             )
 
+app.add_middleware(VercelPathNormalizationMiddleware)
 app.add_middleware(PrometheusObservabilityMiddleware)
 app.add_middleware(
     CORSMiddleware,
@@ -693,6 +713,7 @@ def list_pois():
 
 
 @app.post("/api/v1/evaluation/run", tags=["System"])
+@app.post("/api/v1/eval/run", tags=["System"])
 def run_evaluation_suite():
     """
     Εκτελεί αυτοματοποιημένα όλα τα 19 Test Cases του evaluation_dataset.json
@@ -739,6 +760,7 @@ def get_guardrails_stats():
 
 
 @app.post("/api/v1/evaluation/ragas", tags=["Evaluation"])
+@app.post("/api/v1/eval/ragas", tags=["Evaluation"])
 def run_ragas_evaluation():
     """
     Εκτελεί πλήρη αξιολόγηση RAGAS (Retrieval Augmented Generation Assessment)

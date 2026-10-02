@@ -5071,6 +5071,28 @@
   <!-- JavaScript: Multi-View Routing, 360 Video, Leaflet Maps, Audio TTS, and Live API Fetching -->
   <script>
     // -------------------------------------------------------------
+    // Vercel & Production Backend API Endpoint Resolver
+    // -------------------------------------------------------------
+    // Resolves endpoints seamlessly:
+    // 1. Same-origin Vercel fullstack deployment (relative paths '/api/v1/...')
+    // 2. Custom backend origin via ?api= or ?api_url= parameter or localStorage
+    const _urlParams = new URLSearchParams(window.location.search);
+    const _queryApi = _urlParams.get('api') || _urlParams.get('api_url');
+    if (_queryApi) {
+      try { localStorage.setItem('PHILODY_API_BASE', _queryApi.trim()); } catch (e) {}
+    }
+    const PHILODY_API_BASE = (
+      window.PHILODY_API_BASE ||
+      localStorage.getItem('PHILODY_API_BASE') ||
+      ''
+    ).trim().replace(/\/$/, '');
+
+    function getApiUrl(path) {
+      if (!path.startsWith('/')) path = '/' + path;
+      return PHILODY_API_BASE ? `${PHILODY_API_BASE}${path}` : path;
+    }
+
+    // -------------------------------------------------------------
     // Tab Switching Engine
     // -------------------------------------------------------------
     function switchTab(tabId) {
@@ -5611,7 +5633,7 @@
       PhilodyState.syncItinerary(INITIAL_ITINERARY, 'Feasibility Engine');
 
       // Fetch live POIs & live Weather from FastAPI backend in background
-      fetch('/api/v1/pois')
+      fetch(getApiUrl('/api/v1/pois'))
         .then(r => r.json())
         .then(data => {
           if (data && data.pois) {
@@ -5622,6 +5644,16 @@
         .catch(e => console.warn('POIs live refresh note:', e));
 
       fetchLiveWeather();
+
+      // Verify backend gateway connectivity
+      fetch(getApiUrl('/api/v1/health'))
+        .then(r => r.json())
+        .then(data => {
+          console.log('🏛️ Philody AI Gateway Connected:', data);
+        })
+        .catch(err => {
+          console.warn('🏛️ Philody AI Backend offline or cold-starting:', err);
+        });
     }
 
     function focusPoiOnMap(poiId) {
@@ -5936,14 +5968,21 @@
           wheelchair_accessible: wheelchair
         };
 
-        const res = await fetch('/api/v1/chat/graph', {
+        const res = await fetch(getApiUrl('/api/v1/chat/graph'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         const typingEl = document.getElementById(typingId);
         if (typingEl) typingEl.remove();
+
+        if (!res.ok) {
+          const errMsg = data.detail || `Σφάλμα επικοινωνίας με το backend (HTTP ${res.status})`;
+          appendChat('bot', `⚠️ ${errMsg}`);
+          showLiveToast('Philody AI Gateway', errMsg);
+          return;
+        }
 
         const chatText = data.chat_bubble_text || data.response;
         const backgroundPayload = data.background_json_payload || data.active_itinerary;
@@ -5970,7 +6009,7 @@
       } catch (err) {
         const typingEl = document.getElementById(typingId);
         if (typingEl) typingEl.remove();
-        appendChat('bot', 'Σφάλμα επικοινωνίας με το FastAPI backend.');
+        appendChat('bot', 'Σφάλμα επικοινωνίας με το FastAPI backend. Βεβαιωθείτε ότι το backend είναι ενεργό.');
       }
     }
 
@@ -6330,7 +6369,7 @@
       showLiveToast('Υπολογισμός Δρομολογίου', 'Υπολογισμός νέου εφικτού δρομολογίου με βάση τους περιορισμούς...');
 
       try {
-        const res = await fetch('/api/v1/itinerary/generate', {
+        const res = await fetch(getApiUrl('/api/v1/itinerary/generate'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -6823,7 +6862,7 @@
       }
 
       try {
-        const res = await fetch('/api/v1/iot/event', {
+        const res = await fetch(getApiUrl('/api/v1/iot/event'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -6895,9 +6934,9 @@
       // Fire the backend evaluation asynchronously (supporting /api/v1/evaluation/run or /api/v1/eval/run)
       let backendPromise = (async () => {
         try {
-          let res = await fetch('/api/v1/evaluation/run', { method: 'POST' });
+          let res = await fetch(getApiUrl('/api/v1/evaluation/run'), { method: 'POST' });
           if (!res.ok) {
-            res = await fetch('/api/v1/eval/run', { method: 'POST' });
+            res = await fetch(getApiUrl('/api/v1/eval/run'), { method: 'POST' });
           }
           if (res.ok) {
             return await res.json();
@@ -7067,7 +7106,7 @@
     // -------------------------------------------------------------
     async function fetchGuardrailsTelemetry() {
       try {
-        const res = await fetch('/api/v1/guardrails/stats');
+        const res = await fetch(getApiUrl('/api/v1/guardrails/stats'));
         if (!res.ok) return;
         const d = await res.json();
         const totalEl = document.getElementById('grTotalInspections');
@@ -7097,7 +7136,7 @@
       }
 
       try {
-        const res = await fetch('/api/v1/evaluation/ragas', { method: 'POST' });
+        const res = await fetch(getApiUrl('/api/v1/evaluation/ragas'), { method: 'POST' });
         if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         const data = await res.json();
 
@@ -7230,7 +7269,7 @@
     async function fetchLiveWeather() {
       // 1. Try local/backend API endpoint
       try {
-        const r = await fetch('/api/v1/weather');
+        const r = await fetch(getApiUrl('/api/v1/weather'));
         if (r.ok) {
           const data = await r.json();
           if (data && data.temperature_c !== undefined) {

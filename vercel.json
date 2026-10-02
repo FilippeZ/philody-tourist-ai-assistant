@@ -5,7 +5,8 @@
       "src": "api.py",
       "use": "@vercel/python",
       "config": {
-        "excludeFiles": "{landing/**,tests/**,evaluation/**,*.md,*.txt}"
+        "maxDuration": 60,
+        "excludeFiles": "{landing/**,tests/**,.git/**,.pytest_cache/**,*.md}"
       }
     },
     {
@@ -27,7 +28,19 @@
       "dest": "api.py"
     },
     {
+      "src": "/health",
+      "dest": "api.py"
+    },
+    {
+      "src": "/metrics",
+      "dest": "api.py"
+    },
+    {
       "src": "/docs",
+      "dest": "api.py"
+    },
+    {
+      "src": "/redoc",
       "dest": "api.py"
     },
     {

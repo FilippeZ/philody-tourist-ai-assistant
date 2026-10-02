@@ -1589,7 +1589,11 @@ def render_natural_synthesis(optimized_itinerary: List[Dict[str, Any]] | Dict[st
     if isinstance(optimized_itinerary, dict):
         items = optimized_itinerary.get("schedule", [])
 
-    activities = [item for item in items if item.get("type") != "walking"]
+    activities = [
+        item for item in items
+        if item.get("type") not in ("walking", "transit")
+        and (item.get("name") or item.get("poi_name") or item.get("poi"))
+    ]
     if not activities:
         return "Γεια σας! Είμαι ο Philody. Δεν μπόρεσα να υπολογίσω κάποια διαθέσιμη δραστηριότητα για το επιθυμητό διάστημα."
 
@@ -1602,7 +1606,7 @@ def render_natural_synthesis(optimized_itinerary: List[Dict[str, Any]] | Dict[st
             start_time = item["time"].split("-")[0].strip()
             break
 
-    first_name = activities[0].get("name") or activities[0].get("poi_name", "πρώτο μας σημείο")
+    first_name = (activities[0].get("name") or activities[0].get("poi_name") or activities[0].get("poi") or "πρώτο μας σημείο").strip()
     story_parts = [
         f"Γεια σας! Είμαι ο Philody και ετοίμασα με πολλή χαρά το ιδανικό πρόγραμμα για τη βόλτα σας στην Αθήνα.",
         f"Ξεκινάμε στις {start_time} με το {first_name}."
@@ -1614,7 +1618,9 @@ def render_natural_synthesis(optimized_itinerary: List[Dict[str, Any]] | Dict[st
         story_parts.append(clean_desc)
 
     for act in activities[1:]:
-        name = act.get("name") or act.get("poi_name", "")
+        name = (act.get("name") or act.get("poi_name") or act.get("poi") or "").strip()
+        if not name:
+            continue
         time_hint = ""
         if act.get("time_slot"):
             t_start = act["time_slot"].split("-")[0].strip()
