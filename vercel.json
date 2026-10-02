@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "api.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "excludeFiles": "{landing/**,tests/**,evaluation/**,*.md,*.txt}"
+      }
     },
     {
       "src": "index.html",
